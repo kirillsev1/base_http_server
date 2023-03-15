@@ -85,7 +85,6 @@ class CustomHTTP(BaseHTTPRequestHandler):
         if self.path.startswith((PERSON_PATH, COMPANY_PATH, "/")):
             try:
                 query = self.parse_query()
-                print('query:', query)
             except Exception as error:
                 return BAD_REQUEST, error_page(str(error))
             return OK, self.page(query)
