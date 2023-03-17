@@ -1,4 +1,3 @@
-create table people(id int primary key generated always as identity, fname text, lname text, email text);
 CREATE TABLE IF NOT EXISTS people(
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     fname TEXT,
