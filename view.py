@@ -1,13 +1,6 @@
 """File with function for rendering pages templates."""
 from config import MAIN_PAGE, ERROR_PAGE, CLEAR_TABLE
-from dotenv import load_dotenv
 from requests import get
-from os import getenv
-
-load_dotenv()
-
-API_KEY = getenv("API_KEY")
-USER_API = getenv("USER_API")
 
 
 def to_html(key: any, k_val: any) -> str:
