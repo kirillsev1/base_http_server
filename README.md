@@ -50,13 +50,12 @@
 ### Results of requests are situated in main page. There you can find posted persons by using filter:
     127.0.0.1:8000/?fname=Kirill
 ### For DELETE request url field must be filled with parameters after HOST:PORT and ?;
-    127.0.0.1:8000/?fname=Kirill&lname=Prikhodko
+    127.0.0.1:8000/main?fname=Kirill&lname=Prikhodko
 ### If DELETE query was right there won't be information about person.
 ### Track also may occur with database. Connect to it and select information from people table:
     psql -h 127.0.0.1 -p 5435 -U app http_db - [Connection to database]
     enter password: - [POSTGRES_PASSWORD=12345678]
     SELECT * FROM people;
-
 
 # Postgres database
 ## Tables: 
