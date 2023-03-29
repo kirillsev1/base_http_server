@@ -5,32 +5,11 @@ from config import CONTENT_LENGTH, AUTH, PERSON_PATH, COMPANY_PATH, \
     NO_CONTENT, PERSON_URL, COMPANY_URL, CLEAR_TABLE_PATH, MAIN_PAGE
 from view import get_api_data, people, error_page, main_page, clear_table
 from fill_templates import person_template, company_template
+from config import HOST, PORT
 from http.server import BaseHTTPRequestHandler
 from db_utils import DbHandler
 from typing import Callable
 import json
-
-
-class InvalidQuery(Exception):
-    """Custom error class for."""
-
-    def __init__(self, msg: str) -> None:
-        """Initialize method.
-
-        Args:
-            msg: str - message for user.
-        """
-        super().__init__(msg)
-        self.message = msg
-
-    def __str__(self) -> str:
-        """Magic str method for readable error form.
-
-        Returns:
-            str - error message.
-        """
-        class_name = self.__class__.__name__
-        return f"{class_name} error: {self.message}"
 
 
 class CustomHTTP(BaseHTTPRequestHandler):
@@ -43,8 +22,12 @@ class CustomHTTP(BaseHTTPRequestHandler):
             dict - if headers length not Null returns dict of headers.
         """
         content_length = int(self.headers.get(CONTENT_LENGTH, 0))
+        check_json = json.loads(self.rfile.read(content_length).decode())
+        for element in check_json:
+            if element not in MAIN_REQUIRED_ATTRS:
+                return {}
         if content_length:
-            return json.loads(self.rfile.read(content_length).decode())
+            return check_json
         return {}
 
     def check_auth(self) -> bool:
@@ -95,9 +78,6 @@ class CustomHTTP(BaseHTTPRequestHandler):
     def parse_query(self) -> list:
         """Method get attrs and conds from path.
 
-        Raises:
-            InvalidQuery: Exception - if attrs not empty.
-
         Returns:
             query - list of attrs or conds.
         """
@@ -114,7 +94,8 @@ class CustomHTTP(BaseHTTPRequestHandler):
             if possible_attrs:
                 attrs = list(filter(lambda attr: attr not in possible_attrs, query.keys()))
                 if attrs:
-                    raise InvalidQuery(f"{__name__} unknown attributes: {attrs}")
+                    self.respond(BAD_REQUEST, "Request error")
+                    return None
             return query
         return None
 
@@ -141,7 +122,7 @@ class CustomHTTP(BaseHTTPRequestHandler):
             if not query:
                 return BAD_REQUEST, "DELETE FAILED"
             if DbHandler.delete(query):
-                return OK, f"{self.path}: DELETE OK"
+                return OK, "DELETE OK"
         return NOT_FOUND, "Content not found"
 
     def put(self, record: dict = None) -> tuple:
@@ -161,8 +142,10 @@ class CustomHTTP(BaseHTTPRequestHandler):
                 if attr not in MAIN_ATTRS:
                     return NOT_IMPLEMENTED, f"people do not have attribute: {attr}"
             if all([key in record for key in MAIN_REQUIRED_ATTRS]):
-                answer = "OK" if DbHandler.insert(record) else "FAIL"
-                return CREATED, f"{self.path}: {self.command} {answer}"
+                person_id = DbHandler.insert(record)
+                answer = "OK" if person_id else "FAIL"
+                return_path = self.path.split('?')[0]
+                return CREATED, f"http://{HOST}:{PORT}{return_path}?id={person_id}: {self.command} {answer}"
             return BAD_REQUEST, f"Required keys to add: {MAIN_REQUIRED_ATTRS}"
         return NO_CONTENT, "Content not found"
 
@@ -184,7 +167,8 @@ class CustomHTTP(BaseHTTPRequestHandler):
             res = DbHandler.update(record=record, where=query)
             if not res:
                 return self.put(record)
-            return OK, f"{self.path}: {self.command} OK"
+            return_path = self.path.split('?')[0]
+            return OK, f"http://{HOST}:{PORT}{return_path}?id={res[0]}: {self.command} OK"
 
     def get(self) -> None:
         """Runs get template method."""
@@ -210,7 +194,7 @@ class CustomHTTP(BaseHTTPRequestHandler):
             if new_proc:
                 self.respond(*new_proc)
             else:
-                self.respond(NOT_FOUND, "Path not found")
+                self.respond(NOT_FOUND, "Go to /main")
             return
         self.respond(FORBIDDEN, "Auth Fail")
 

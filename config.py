@@ -7,7 +7,6 @@ load_dotenv()
 NOT_FOUND = 404
 FORBIDDEN = 403
 BAD_REQUEST = 400
-BAD_REQUEST = 400
 NOT_IMPLEMENTED = 501
 
 # HTTP OK codes
@@ -22,9 +21,10 @@ COMPANY_PATH = "/gen_company"
 CLEAR_TABLE_PATH = "/clear_table"
 
 # Database requests
+RETURN_ID = "returning id"
 TABLE = "people"
 SELECTOR = "SELECT * FROM people"
-INSERT = "INSERT INTO {table} ({keys}) VALUES ({values})"
+INSERT = "INSERT INTO {table} ({keys}) VALUES ({values}) returning id"
 GET_TOKEN = "SELECT token FROM token WHERE username='{username}'"
 UPDATE = "UPDATE {table} SET {request}"
 DELETE = "DELETE FROM {table} "
