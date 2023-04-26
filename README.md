@@ -4,10 +4,6 @@
 # How to start
     git clone https://github.com/kirillsev1/SecondPartAtom_hard.git
 
-    git checkout prikhodko
-
-    cd first
-
     python3.10 -m venv ./venv
 
     . ./venv/bin/activate
